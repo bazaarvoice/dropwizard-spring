@@ -1,7 +1,9 @@
 Dropwizard/Spring
 ===================================
 
-Welcome to the Dropwizard/Spring project
+Welcome to the Dropwizard/Spring project. This is a updated version of the work
+ done by Nicolas Huray at [https://github.com/nhuray/dropwizard-spring](https://github.com/nhuray/dropwizard-spring) and
+ [https://github.com/the41/dropwizard-spring](https://github.com/the41/dropwizard-spring)
 
 
 Introduction
@@ -17,11 +19,11 @@ This project provide a simple method for integrating Spring with Dropwizard.
 Versions
 ------------
 
-The current version of the project is **0.4.0-SNAPSHOT**.
+The current version of the project is **1.0.0-SNAPSHOT**.
 
 | dropwizard-spring  | Dropwizard   | Spring        |
 |:------------------:|:------------:|:-------------:|
-| master (0.4.0-SNAPSHOT) | 0.7.0        | 3.1.4.RELEASE |
+| master (1.0.0-SNAPSHOT) | 0.9.0        | 3.1.4.RELEASE |
 | 0.3.1              | 0.6.2        | 3.1.4.RELEASE |
 | 0.2                | 0.6.0        | 3.1.3.RELEASE |
 | 0.1                | 0.5.1        | 3.1.1.RELEASE |
