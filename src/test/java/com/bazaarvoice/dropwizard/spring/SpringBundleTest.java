@@ -1,6 +1,4 @@
-package com.github.nhuray.dropwizard.spring;
-
-import javax.ws.rs.container.ContainerResponseFilter;
+package com.bazaarvoice.dropwizard.spring;
 
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
@@ -8,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hello.config.HelloAppConfiguration;
 import hello.config.HelloBinder;
 import hello.config.HelloConfiguration;
-import hello.config.HelloInjectionResolver;
 import hello.health.HelloHealthCheck;
 import hello.resources.HelloResource;
 import hello.server_lifecycle_listeners.HelloServerLifecycleListener;
@@ -29,15 +26,18 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import javax.ws.rs.container.ContainerResponseFilter;
+
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings ("unchecked")
 public class SpringBundleTest {
 
     @Mock
@@ -71,7 +71,7 @@ public class SpringBundleTest {
     public void setup() {
         context = new AnnotationConfigApplicationContext();
         context.scan("hello");
-        bundle = new SpringBundle(context, true, true, true, true);
+        bundle = new SpringBundle(context);
 
         MockitoAnnotations.initMocks(this);
 
@@ -202,27 +202,32 @@ public class SpringBundleTest {
     public void unableToRegisterConfigurationIfSpringContextIsActive() throws Exception {
         // When
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("test"); // active context
-        bundle = new SpringBundle(context, true, false, false, false);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void unableToRegisterPlaceholderIfSpringContextIsActive() throws Exception {
-        // When
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("test"); // active context
-        bundle = new SpringBundle(context, false, false, true, false);
+        bundle = new SpringBundle(context)
+                .registerConfiguration(true)
+                .registerEnvironment(false)
+                .registerObjectMapper(false);
+        bundle.run(configuration, environment);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void unableToRegisterEnvironmentIfSpringContextIsActive() throws Exception {
         // When
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("test"); // active context
-        bundle = new SpringBundle(context, false, true, false, false);
+        bundle = new SpringBundle(context)
+                .registerConfiguration(false)
+                .registerEnvironment(true)
+                .registerObjectMapper(false);
+        bundle.run(configuration, environment);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void unableToRegisterObjectMapperIfSpringContextIsActive() throws Exception {
         // When
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext("test"); // active context
-        bundle = new SpringBundle(context, false, false, false, true);
+        bundle = new SpringBundle(context)
+                .registerConfiguration(false)
+                .registerEnvironment(false)
+                .registerObjectMapper(true);
+        bundle.run(configuration, environment);
     }
 }

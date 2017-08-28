@@ -16,30 +16,22 @@ Introduction
 This project provide a simple method for integrating Spring with Dropwizard.
 
 
-Versions
+Required Versions
 ------------
 
-The current version of the project is **1.0.0-SNAPSHOT**.
-
-| dropwizard-spring  | Dropwizard   | Spring        |
-|:------------------:|:------------:|:-------------:|
-| master (1.0.0-SNAPSHOT) | 0.9.0        | 3.1.4.RELEASE |
-| 0.3.1              | 0.6.2        | 3.1.4.RELEASE |
-| 0.2                | 0.6.0        | 3.1.3.RELEASE |
-| 0.1                | 0.5.1        | 3.1.1.RELEASE |
+- Java 8 or grater is required.
+- Spring version 3.1 or grater is required.  Spring version 4.3.10.RELEASED is used for testing.
+- Dropwizard version 0.8 or grater is required.  Dropwizard 1.1 is used for testing.
 
 
-Installation
+Maven dependency
 ------------
-
-
-To install Dropwizard/Spring you just have to add this Maven dependency in your project :
 
 ```xml
 <dependency>
-     <groupId>com.github.nhuray</groupId>
+     <groupId>com.bazaarvoice</groupId>
      <artifactId>dropwizard-spring</artifactId>
-     <version>0.4.0-SNAPSHOT</version>
+     <version>2.0.0</version>
 </dependency>
 ```
 
@@ -55,27 +47,35 @@ For example :
 ```java
 public class HelloApp extends Service<HelloAppConfiguration> {
 
-    private static final String CONFIGURATION_FILE = "src/test/resources/hello/hello.yml";
-
     public static void main(String[] args) throws Exception {
-      new HelloApp().run(new String[]{"server", CONFIGURATION_FILE});
+      new HelloApp().run(args);
     }
 
     @Override
     public void initialize(Bootstrap<HelloAppConfiguration> bootstrap) {
-      // register configuration, environment and placeholder
-      bootstrap.addBundle(new SpringBundle(applicationContext(), true, true, true));
+      // Create and add the SpringBundle, this will register configuration, environment and placeholder
+      bootstrap.addBundle(new SpringBundle<>(applicationContext())
+                .registerConfiguration(true)     // Enable/Disable registering the Configuration object,  Default is true
+                .withConfigurationBeanName("dw") // Bean name to use when registering the Configuration object, Default is 'dw'
+                .registerEnvironment(true)       // Enable/Disable registering the Dropwizard Environment object,  Default is true
+                .withEnvironmentBeanName("dwEnv")// Bean name to use when registering the Dropwizard Environment object, Default is 'dwEnv'
+                .registerObjectMapper(true)      // Enable/Disable registering Dropwizard's ObjectMapper object,  Default is true
+                .withObjectMapperBeanName("dwObjectMapper")// Bean name to use when registering Dropwizard's ObjectMapper object, Default is 'dwObjectMapper'
+      );
     }
 
     @Override
     public void run(HelloAppConfiguration configuration, Environment environment) throws Exception {
-      // doing nothing
-    }
+        // All beans will be added to the Spring Context during the run() phase
+     }
 
 
     private ConfigurableApplicationContext applicationContext() throws BeansException {
+      // the ApplicationContext must be not active in order to register configuration, environment or objectmapper
+      // The easiest way to do this is to use a AnnotationConfigApplicationContext.  If you use a ClassPathXmlApplicationContext, it will automatically be active!
       AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-      context.scan("hello");
+      context.register(JavaBeanConfiguration.class);
+      context.scan("my.root.package");
       return context;
     }
 }
@@ -87,11 +87,10 @@ The ```SpringBundle``` class use the application context to initialize Dropwizar
 
 Moreover the ```SpringBundle``` class register :
 
- - a ```ConfigurationPlaceholderConfigurer``` to resolve Dropwizard configuration as [Spring placeholders](http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/beans.html#beans-factory-placeholderconfigurer) (For example : ```${http.port}```).
-
+ - a ```PropertySource``` to resolve Dropwizard configuration as [Spring placeholders](http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/beans.html#beans-factory-placeholderconfigurer) (For example : ```${myConfigurationProperty}```).
  - the Dropwizard configuration with the name ```dw``` to retrieve complex configuration with [Spring Expression Language](http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/expressions.html) (For example : ```#{dw.httpConfiguration}```).
-
  - the Dropwizard environment with the name ```dwEnv``` to retrieve complex configuration with [Spring Expression Language](http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/expressions.html) (For example : ```#{dwEnv.validator}```).
+ - the Dropwizard ObjectMapper with the name ```dwObjectMapper``` to retrieve complex configuration with [Spring Expression Language](http://static.springsource.org/spring/docs/3.1.x/spring-framework-reference/html/expressions.html) (For example : ```#{dwObjectMapper}```).
 
 Please take a look at the hello application located in ```src/test/java/hello```.
 
